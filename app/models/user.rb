@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
 
     has_many :recommenders, through: :receiving_recommendations
 
-    
+    # DATA - API HASH 
     def player_api_hash
 
         if platform == "psn"
@@ -27,28 +27,58 @@ class User < ActiveRecord::Base
     
     end
 
+    #Player stats
+    def lifeTimeStats
+         player_api_hash["lifeTimeStats"]
+    end
+    
+    def total_wins
+        lifeTimeStats[8]["value"].to_i #[8] is the 8th element in lifeTimeStats array which contains total wins.
+    end
+
+    def total_matches
+        lifeTimeStats[7]["value"].to_i #[7] is the 7th element in lifeTimeStats array which contains total matches.
+      end
+    
+      def total_kills
+        lifeTimeStats[10]["value"].to_i #[10] is the 10th element in lifeTimeStats array which contains total kills.
+      end
+    
+      def kd_ratio
+        lifeTimeStats[11]["value"].to_f #[11] is the 11th element in lifeTimeStats array which contains Kill/Death ratio.
+      end
+    
+      def rank
+        player_api_hash["stats"]["p2"]["trnRating"]["rank"]
+      end
+    
+      def display_stats
+        puts "Total Wins: #{total_wins}"
+        puts "Total Matches: #{total_matches}"
+        puts "Total Kills: #{total_kills}"
+        puts "Kill/Death Ratio: #{kd_ratio}"
+        puts "Rank: #{rank}"
+      end
+
     # Match a user
     def match(other_user)
-        recommending << other_user
+
+        being_recommended_to.find_or_create_by(recommended_id: other_user.id)
+
+        other_user.being_recommended_to.find_or_create_by(recommended_id: self.id )
+
     end
 
     # Unmatched a user
-    def unmatch(other_user) #need ot talk to TC on best way to delete. 
-        recommending.delete(other_user) #deletes relationship from the other user's table
-        # save
-        # other_user.recommending.delete(User.find(self)) This is not working!
-        # other_user.save
+    def unmatch(other_user) 
+        Relationship.where("recommended_id= ? AND recommender_id=?", other_user.id, self.id).delete_all
+
+        Relationship.where("recommended_id= ? AND recommender_id=? ", self.id, other_user.id).delete_all
     end
 
-    # Returns true if the current user is matched the other user. 
+    #grab all the instances of matches for the user
 
-    def matched?(other_user)
-        recommending.include?(other_user)
-    end
-
-    #grab all the instances of recommenders for the user
-
-    def recommendations 
+    def matches 
         recommenders
     end
 
