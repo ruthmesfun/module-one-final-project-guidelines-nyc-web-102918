@@ -2,6 +2,7 @@ require 'bundler'
 require 'json'
 require 'rest-client'
 require 'dotenv'
+require 'mailjet'
 
 Bundler.require
 

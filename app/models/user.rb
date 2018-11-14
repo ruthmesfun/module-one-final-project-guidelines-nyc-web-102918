@@ -24,7 +24,6 @@ class User < ActiveRecord::Base
 
         response_string = RestClient.get("https://api.fortnitetracker.com/v1/profile/#{platform}/#{user}", headers={"TRN-Api-Key": ENV['API_KEY']})
         response_hash = JSON.parse(response_string)
-    
     end
 
     #Player stats
@@ -102,18 +101,52 @@ class User < ActiveRecord::Base
         Relationship.where("recommended_id= ? AND recommender_id=?", other_user.id, self.id).update(rating: new_rating)
     end
 
+    #Email creator method
 
-    #grab all the instances of matches for the user
+    def mail_my_stats
 
-    def matches 
-        recommenders
-    end
+        Mailjet.configure do |config|
+            config.api_key = ENV['EMAIL']
+          
+            config.secret_key = ENV['EMAIL_SECRET_KEY']
+          
+            config.api_version = "v3.1"
+          end
 
-    #CRUD
-    
-    def delete
+          wins = "Total Wins: #{total_wins}"
+          tot_matches =  "Total Matches: #{total_matches}"
+          tot_kills =  "Total Kills: #{total_kills}"
+          kd =  "Kill/Death Ratio: #{kd_ratio}"
+          myRank =  "Rank: #{rank}"
+        
+        variable = Mailjet::Send.create(messages: [{
+            'From'=> {
+                'Email'=> "vibhu.mahendru@flatironschool.com",
+                'Name'=> 'My Fortnite Stats'
+            },
+            'To'=> [
+                {
+                    'Email'=> email,
+                    'Name'=> username
+                }
+            ],
+            'Subject'=> 'stats',
+            'TextPart'=> "LifeTime Stats:
+        
+            #{wins}
+            #{tot_matches}
+            #{tot_kills}
+            #{kd}
+            #{myRank}
+            "
+        
+        }]
+        )
+        p variable.attributes['Messages']
+        end
 
-    end
+    # grab all the instances of matches for the user
+
 
 
 

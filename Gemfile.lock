@@ -22,6 +22,10 @@ GEM
       domain_name (~> 0.5)
     i18n (0.8.1)
     json (2.1.0)
+    mailjet (1.5.4)
+      activesupport (>= 3.1.0)
+      rack (>= 1.4.0)
+      rest-client
     method_source (0.8.2)
     mime-types (3.2.2)
       mime-types-data (~> 3.2015)
@@ -64,6 +68,7 @@ PLATFORMS
 DEPENDENCIES
   dotenv
   json
+  mailjet
   pry
   rake
   require_all
