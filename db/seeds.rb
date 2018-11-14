@@ -1,19 +1,7 @@
-
-ruth = User.new
-ruth.username = "Darksakura21"
-ruth.platform = "pc"
-ruth.rank = 5
-ruth.save
-
-vibhu = User.new
-vibhu.username = "Vibzz00981"
-vibhu.platform = "psn"
-vibhu.rank = 5
-vibhu.save
-
-ninja = User.new
-ninja.username = "Ninja"
-ninja.platform = "pc"
-ninja.rank = 10
-ninja.save
+user1 = User.create(platform:"psn", username: "mayeriver" )
+user2 = User.create(platform: "psn", username: "pranav17zy")
+user3 = User.create(platform: "pc", username: "SypherPK")
+user4 = User.create(platform: "psn", username: "aashreytiku" )
+user5 = User.create(platform: "psn", username: "Vibzz00981")
+user6 = User.create(platform: "pc", username: "Ninja")
 

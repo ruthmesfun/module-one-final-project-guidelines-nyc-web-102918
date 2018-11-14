@@ -22,7 +22,7 @@ class User < ActiveRecord::Base
             user = username
         end
 
-        response_string = RestClient.get("https://api.fortnitetracker.com/v1/profile/#{platform}/#{user}", headers={"TRN-Api-Key": "ca3bdf7b-93b1-466f-a75b-12086ad5359b"})
+        response_string = RestClient.get("https://api.fortnitetracker.com/v1/profile/#{platform}/#{user}", headers={"TRN-Api-Key": "d60eef5c-89bf-4192-9e0d-6d0b834589a0"})
         response_hash = JSON.parse(response_string)
     
     end
@@ -59,14 +59,29 @@ class User < ActiveRecord::Base
         puts "Kill/Death Ratio: #{kd_ratio}"
         puts "Rank: #{rank}"
       end
+      
+      def  average_rating
+       rating_array = Relationship.where(recommended_id: self.id).select(:rating).map{|match| match.rating}
 
-    # Match a user
+       avg_rating = rating_array.inject(:+)/ (rating_array.count).to_f
+
+       avg_rating
+      end
+    # Match a user based on win conditions 
+
     def match(other_user)
 
-        being_recommended_to.find_or_create_by(recommended_id: other_user.id)
+        min_wins = total_wins - 15
+        max_wins =  total_wins + 15
 
-        other_user.being_recommended_to.find_or_create_by(recommended_id: self.id )
+        if min_wins <= other_user.total_wins && max_wins >= other_user.total_wins
 
+            being_recommended_to.find_or_create_by(recommended_id: other_user.id)
+
+            other_user.being_recommended_to.find_or_create_by(recommended_id: self.id )
+        else
+            "Please suggest another player."
+        end
     end
 
     # Unmatched a user
@@ -76,11 +91,29 @@ class User < ActiveRecord::Base
         Relationship.where("recommended_id= ? AND recommender_id=? ", self.id, other_user.id).delete_all
     end
 
+
+    # Rate the person you played with
+
+    def rate_recommended(other_user, new_rating)
+        Relationship.where("recommended_id= ? AND recommender_id=?", other_user.id, self.id).update(rating: new_rating)
+    end
+
+
     #grab all the instances of matches for the user
 
     def matches 
         recommenders
     end
+
+    #CRUD
+    
+    def delete
+
+    end
+
+
+
+
 
 
 
