@@ -3,4 +3,9 @@ class User < ActiveRecord::Base
                                     foreign_key: "recommender_id",
                                     dependent: :destroy
 
+    
+    has_many :recommending, through: :active_relationships, source: :recommended
+
+
+
 end
