@@ -69,6 +69,10 @@ class User < ActiveRecord::Base
       end
     # Match a user based on win conditions 
 
+    def recommended?
+        average_rating >= 3
+    end
+
     def match(other_user)
 
         min_wins = total_wins - 15
