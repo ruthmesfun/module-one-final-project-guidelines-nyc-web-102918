@@ -22,7 +22,7 @@ class User < ActiveRecord::Base
             user = username
         end
 
-        response_string = RestClient.get("https://api.fortnitetracker.com/v1/profile/#{platform}/#{user}", headers={"TRN-Api-Key": "d60eef5c-89bf-4192-9e0d-6d0b834589a0"})
+        response_string = RestClient.get("https://api.fortnitetracker.com/v1/profile/#{platform}/#{user}", headers={"TRN-Api-Key": ENV['API_KEY']})
         response_hash = JSON.parse(response_string)
     
     end
