@@ -6,7 +6,7 @@ ruth.rank = 5
 ruth.save
 
 vibhu = User.new
-vibhu.username = "vibzz00981"
+vibhu.username = "Vibzz00981"
 vibhu.platform = "psn"
 vibhu.rank = 5
 vibhu.save
