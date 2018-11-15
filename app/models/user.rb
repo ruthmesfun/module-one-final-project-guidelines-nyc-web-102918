@@ -1,4 +1,5 @@
 class User < ActiveRecord::Base
+    has_many :stats
     has_many :being_recommended_to, class_name: "Relationship", 
                                     foreign_key: "recommender_id",
                                     dependent: :destroy
@@ -8,8 +9,9 @@ class User < ActiveRecord::Base
                                     dependent: :destroy
 
     has_many :recommending, through: :being_recommended_to, source: :recommended
-
     has_many :recommenders, through: :receiving_recommendations
+
+
 
     # DATA - API HASH 
     def player_api_hash
@@ -26,7 +28,12 @@ class User < ActiveRecord::Base
         response_hash = JSON.parse(response_string)
     end
 
-    #Player stats
+    # This saves stats in the database once pulled up
+    def save_stats
+        Stat.create(total_wins: self.total_wins, kill_death_ratio: self.kd_ratio, total_matches: self.total_matches, total_kills: self.total_kills, rank: self.rank, user_id: self.id )
+    end
+
+    #Player stats -- should this be moved to Stats then? 
     def lifeTimeStats
          player_api_hash["lifeTimeStats"]
     end
@@ -37,35 +44,35 @@ class User < ActiveRecord::Base
 
     def total_matches
         lifeTimeStats[7]["value"].to_i #[7] is the 7th element in lifeTimeStats array which contains total matches.
-      end
+    end
     
-      def total_kills
+    def total_kills
         lifeTimeStats[10]["value"].to_i #[10] is the 10th element in lifeTimeStats array which contains total kills.
-      end
+    end
     
-      def kd_ratio
+    def kd_ratio
         lifeTimeStats[11]["value"].to_f #[11] is the 11th element in lifeTimeStats array which contains Kill/Death ratio.
-      end
+    end
     
-      def rank
+    def rank
         player_api_hash["stats"]["p2"]["trnRating"]["rank"]
-      end
+    end
     
-      def display_stats
+    def display_stats
         puts "Total Wins: #{total_wins}"
         puts "Total Matches: #{total_matches}"
         puts "Total Kills: #{total_kills}"
         puts "Kill/Death Ratio: #{kd_ratio}"
         puts "Rank: #{rank}"
-      end
+    end
       
-      def  average_rating
+    def  average_rating
        rating_array = Relationship.where(recommended_id: self.id).select(:rating).map{|match| match.rating}
 
        avg_rating = rating_array.inject(:+)/ (rating_array.count).to_f
 
        avg_rating
-      end
+    end
     # Match a user based on win conditions 
 
     def recommended?
@@ -86,6 +93,22 @@ class User < ActiveRecord::Base
             "Please suggest another player."
         end
     end
+
+    def generate_recommendations # grab a list of people who would be recommended to this person
+        User.all.each do |user|
+            self.match(user)
+        end
+    end
+
+    def recommendations 
+        Relationship.all.select{|relationship| relationship.recommender_id == self.id }
+    end
+
+    def select_recommended
+        other_user_id = recommendations.sample.recommened_id
+        User.find(other_user_id)
+    end
+
 
     # Unmatched a user
     def unmatch(other_user) 
@@ -143,16 +166,6 @@ class User < ActiveRecord::Base
         }]
         )
         p variable.attributes['Messages']
-        end
-
-    # grab all the instances of matches for the user
-
-
-
-
-
-
-
-
+    end
 
 end
