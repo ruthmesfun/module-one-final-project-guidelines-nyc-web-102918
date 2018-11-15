@@ -28,34 +28,34 @@ class User < ActiveRecord::Base
         response_hash = JSON.parse(response_string)
     end
 
-    # This saves stats in the database once pulled up
-    def save_stats
-        Stat.create(total_wins: self.total_wins, kill_death_ratio: self.kd_ratio, total_matches: self.total_matches, total_kills: self.total_kills, rank: self.rank, user_id: self.id )
-    end
-
     #Player stats -- should this be moved to Stats then? 
     def lifeTimeStats
-         player_api_hash["lifeTimeStats"]
+        player_api_hash["lifeTimeStats"]
+   end
+
+    # This saves stats in the database once pulled up
+    def save_stats
+        Stat.create(total_wins: lifeTimeStats[8]["value"].to_i, kill_death_ratio: lifeTimeStats[11]["value"].to_f, total_matches:  lifeTimeStats[7]["value"].to_i, total_kills: lifeTimeStats[10]["value"].to_i, rank: player_api_hash["stats"]["p2"]["trnRating"]["rank"], user_id: self.id)
     end
-    
+
     def total_wins
-        lifeTimeStats[8]["value"].to_i #[8] is the 8th element in lifeTimeStats array which contains total wins.
+        Stat.current_total_wins(self)
     end
 
     def total_matches
-        lifeTimeStats[7]["value"].to_i #[7] is the 7th element in lifeTimeStats array which contains total matches.
+       Stat.current_total_matches(self)
     end
     
     def total_kills
-        lifeTimeStats[10]["value"].to_i #[10] is the 10th element in lifeTimeStats array which contains total kills.
+        Stat.current_total_kills(self)
     end
     
     def kd_ratio
-        lifeTimeStats[11]["value"].to_f #[11] is the 11th element in lifeTimeStats array which contains Kill/Death ratio.
+        Stat.current_kd_ratio(self)
     end
     
     def rank
-        player_api_hash["stats"]["p2"]["trnRating"]["rank"]
+        Stat.current_rank(self)
     end
     
     def display_stats
@@ -79,17 +79,23 @@ class User < ActiveRecord::Base
         average_rating >= 3
     end
 
+    def expert_player? #This will match any expert player together
+        total_wins > 500
+    end
+
     def match(other_user)
 
-        min_wins = total_wins - 15
-        max_wins =  total_wins + 15
+        min_wins = self.total_wins - 15
+        max_wins =  self.total_wins + 15
 
-        if min_wins <= other_user.total_wins && max_wins >= other_user.total_wins
-
-            being_recommended_to.find_or_create_by(recommended_id: other_user.id)
-
-            other_user.being_recommended_to.find_or_create_by(recommended_id: self.id )
-        else
+        unless other_user == self
+            if self.expert_player? && other_user.expert_player? 
+                being_recommended_to.find_or_create_by(recommended_id: other_user.id)
+                other_user.being_recommended_to.find_or_create_by(recommended_id: self.id)
+            elsif min_wins <= other_user.total_wins && max_wins >= other_user.total_wins
+                being_recommended_to.find_or_create_by(recommended_id: other_user.id)
+                other_user.being_recommended_to.find_or_create_by(recommended_id: self.id)  
+            end
             "Please suggest another player."
         end
     end
@@ -124,8 +130,10 @@ class User < ActiveRecord::Base
         Relationship.where("recommended_id= ? AND recommender_id=?", other_user.id, self.id).update(rating: new_rating)
     end
 
-    #Email creator method
+    # EMAILERS
 
+
+    # Email stat method 
     def mail_my_stats
 
         Mailjet.configure do |config|
@@ -167,5 +175,38 @@ class User < ActiveRecord::Base
         )
         p variable.attributes['Messages']
     end
+
+    #Email sent to recommendation 
+    def mail_for_match(recommender)
+        Mailjet.configure do |config|
+          config.api_key = ENV['EMAIL']
+      
+          config.secret_key = ENV['EMAIL_SECRET_KEY']
+      
+          config.api_version = "v3.1"
+        end
+      
+      variable = Mailjet::Send.create(messages: [{
+          'From'=> {
+              'Email'=> "vibhu.mahendru@flatironschool.com",
+              'Name'=> "#{self.username}"
+          },
+          'To'=> [
+              {
+                  'Email'=> match_email,
+                  'Name'=> "#{recommender.email}"
+              }
+          ],
+          'Subject'=> 'New Fortnite Match!',
+          'TextPart'=> "Hi #{recommender.username}!
+      
+      You just matched with #{self.username} on Fortninte!
+      Reply 'YES' to play with them."
+      
+      }]
+      )
+      p variable.attributes['Messages']
+    end
+
 
 end
