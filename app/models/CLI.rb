@@ -87,9 +87,6 @@ class CLI
         puts "#{other_username}'s stats: \n"
 
         user.find_users_stats(other_username)
-
-
-        
     end
 
 
