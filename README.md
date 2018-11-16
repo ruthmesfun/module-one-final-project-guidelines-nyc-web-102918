@@ -4,7 +4,7 @@
 This app allows you to easily find your stats (and receive emails), compare them with players and even recommend other players for you to team with. 
 
 
-# Instructions 
+## Instructions 
 
 1. Fork and Clone this repository. 
 
@@ -15,7 +15,7 @@ This app allows you to easily find your stats (and receive emails), compare them
 4. Choose the choice from the menu screen 
 
 
-# Contributor's Guide
+## Contributor's Guide
 - Please contribute! You can clone the repository and create a branch 
 
 
