@@ -16,7 +16,7 @@ This app allows you to easily find your stats (and receive emails), compare them
 
 
 ## Contributor's Guide
-- Please contribute! You can clone the repository and create a branch 
+- Please contribute! You can fork the repository, create a branch and push the branch up and create a pull request. We will review and merge! 
 
 
 All Rights Reserved to Ruth and Vibhu

@@ -78,6 +78,14 @@ class User < ActiveRecord::Base
 
        avg_rating
     end
+
+
+    def rate_a_player(other_user, rate)
+        relationship_rating = Relationship.find_by(recommended_id: other_user.id, recommender_id: self.id)
+        relationship_rating.update(rating: rate)
+        relationship_rating.save
+
+    end
     # Match a user based on win conditions 
 
     def recommended?
@@ -167,7 +175,7 @@ class User < ActiveRecord::Base
                 }
             ],
             'Subject'=> 'stats',
-            'TextPart'=> "LifeTime Stats:
+            'TextPart'=> "Current Stats for #{username}:
         
             #{wins}
             #{tot_matches}
@@ -178,7 +186,6 @@ class User < ActiveRecord::Base
         
         }]
         )
-        p variable.attributes['Messages']
     end
 
     #Email sent to recommendation 
@@ -198,8 +205,8 @@ class User < ActiveRecord::Base
           },
           'To'=> [
               {
-                  'Email'=> match_email,
-                  'Name'=> "#{recommender.email}"
+                  'Email'=> "#{recommender.email}",
+                  'Name'=> "#{recommender.username}"
               }
           ],
           'Subject'=> 'New Fortnite Match!',
@@ -210,7 +217,6 @@ class User < ActiveRecord::Base
       
       }]
       )
-      p variable.attributes['Messages']
     end
 
 

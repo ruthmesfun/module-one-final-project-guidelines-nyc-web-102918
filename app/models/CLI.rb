@@ -21,6 +21,10 @@ class CLI
             self.user.save_stats
             self.user.generate_recommendations
             puts "....... \n"
+            puts "Welcome back, #{self.user_name}!"
+            puts "....... \n"
+           
+
         else
             puts "Oh looks like you are not in our database. Welcome! What is your email?"
             self.e_mail = gets.chomp
@@ -37,6 +41,7 @@ class CLI
             puts "............ \n"
             puts "....... \n"
             puts "\n"
+            puts "Welcome, #{self.user_name}!"
         end
         user
     end
@@ -56,21 +61,84 @@ class CLI
     end
 
     def current_stats
+        puts "....... \n"
         self.user.display_stats
-        #Option for email!
+        puts "....... \n"
+    end
+
+    def email_my_stats
+        puts "Would you like your stats to be emailed to you? (yes/no)"
+        confirm = gets.chomp.downcase
+        
+        if confirm == 'yes' 
+            puts "SENDING EMAIL NOW.... \n"
+            puts "................ \n"
+
+            user.mail_my_stats
+        else 
+            puts "No worries!"
+        end
     end
 
     def todays_recommendation
         self.other_user = user.select_recommended
         puts "We recommend #{other_user.username}!"
-        #Option for email! 
+        puts "................ \n"
+        puts "Would you like to email them and see if they can play now? (yes/no)"
+        choice = gets.chomp.downcase
+
+        if choice == "yes"
+            user.mail_for_match(self.other_user)
+            puts "Sending email..."
+            sleep(5)
+
+            puts "_______  ___      _______  __   __    _______  _______  __   __  _______ "
+            puts "|       ||   |    |   _   ||  | |  |  |       ||   _   ||  |_|  ||       |"
+            puts "|    _  ||   |    |  |_|  ||  |_|  |  |    ___||  |_|  ||       ||    ___|"
+            puts "|   |_| ||   |    |       ||       |  |   | __ |       ||       ||   |___ "
+            puts "|    ___||   |___ |       ||_     _|  |   ||  ||       ||       ||    ___|"
+            puts "|   |    |       ||   _   |  |   |    |   |_| ||   _   || ||_|| ||   |___ "
+            puts "|___|    |_______||__| |__|  |___|    |_______||__| |__||_|   |_||_______|"
+            
+            puts "\n"
+            puts "\n"
+            sleep(4)
+            puts " __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __" 
+            puts "|__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|__|"
+            sleep(3)
+            puts " __ __ __ __ __ __ __ __ __" 
+            puts "|__|__|__|__|__|__|__|__|__|"
+            sleep(2)
+            puts " __ __ __ __ __ __ " 
+            puts "|__|__|__|__|__|__|"
+            sleep(1)
+            puts "\n"
+            puts "\n"
+            puts " _______  _______  __   __  _______    _______  __   __  _______  ______   "
+            puts "|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  "
+            puts "|    ___||  |_|  ||       ||    ___|  |   _   ||  |_|  ||    ___||   | ||  "
+            puts "|   | __ |       ||       ||   |___   |  | |  ||       ||   |___ |   |_||_ "
+            puts "|   ||  ||       ||       ||    ___|  |  |_|  ||       ||    ___||    __  |"
+            puts "|   |_| ||   _   || ||_|| ||   |___   |       | |     | |   |___ |   |  | |"
+            puts "|_______||__| |__||_|   |_||_______|  |_______|  |___|  |_______||___|  |_|"
+            
+            sleep(1)
+            puts "-----------------------------\n"
+            after_game_survey
+            puts "Thanks for the Feedback!"
+        else
+           puts "Thats fine, you can allways come back later!"
+        end
     end
 
     def menu_selection
         if self.choice == "1"
             self.current_stats
+            self.email_my_stats
         elsif self.choice == "2"
             todays_recommendation
+
+
         elsif self.choice == "3"
             puts "Who would you like to be compared to?"
             other_username = gets.chomp
@@ -78,32 +146,48 @@ class CLI
         end
     end
 
-    def compared_stats(other_username)
+    def compared_stats(other_user)
         puts "Your stats: \n"
         current_stats
 
         puts "-----------------------------\n"
 
-        puts "#{other_username}'s stats: \n"
+        puts "#{other_user}'s stats: \n"
 
-        user.find_users_stats(other_username)
+        user.find_users_stats(other_user)
     end
 
+    def after_game_survey
+        puts "How did you like playing with #{other_user.username}? Rate them on a scale 1 - 5."
+        rate = gets.chomp.to_i 
+        puts "-----------------------------\n"
+        user.rate_a_player(other_user, rate)
+
+        if  rate < 3 then user.unmatch(other_user) end
+    end
+
+    def self.start
+        cli1 = CLI.new
+
+        cli1.greeting
+
+        cli1.get_username
+
+        cli1.identifier
+
+        choice = "yes"
+
+        until choice == "no"
+            cli1.menu
+
+            cli1.menu_selection
+
+            puts "You would like to go to the menu (yes/no)?"
+            choice = gets.chomp
+        end
+
+        puts "Thanks for using the app and come again!"
+    end
 
 end
 
-# 3. Email me my stats
-# Email them directly their stats 
-# 4. Recommend me a player to play with
-# We think you would have a great time with this player:
-# Username
-# Would you like us to email them? 
-# YES [ Email]
-# PLAY TIME!!!! [ANIMATION]e
-
-# GAME OVER 
-# How did you enjoy your time with [other user] (rate: 1-5)
-# Rating 
-# Increase their avg or decrease 
-# It would change their suggestions
-# NO => No problem thought to ask! 
