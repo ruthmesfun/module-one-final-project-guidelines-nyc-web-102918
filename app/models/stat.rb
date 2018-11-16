@@ -28,7 +28,7 @@ class Stat < ActiveRecord::Base
     end
     
     def self.current_kd_ratio(user)
-        self.current_stat(user).kd_ratio
+        self.current_stat(user).kill_death_ratio
     end
     
     def self.current_rank(user)

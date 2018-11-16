@@ -65,6 +65,11 @@ class User < ActiveRecord::Base
         puts "Kill/Death Ratio: #{kd_ratio}"
         puts "Rank: #{rank}"
     end
+
+    def find_users_stats(other_username)
+       other_user = User.find_by(username: other_username)
+       other_user.display_stats
+    end
       
     def  average_rating
        rating_array = Relationship.where(recommended_id: self.id).select(:rating).map{|match| match.rating}
@@ -111,7 +116,7 @@ class User < ActiveRecord::Base
     end
 
     def select_recommended
-        other_user_id = recommendations.sample.recommened_id
+        other_user_id = recommendations.sample.recommended_id
         User.find(other_user_id)
     end
 
